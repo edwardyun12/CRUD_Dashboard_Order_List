@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Grid - Cybernetic 3D CRUD Controller</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Ambient Glow Background Blobs -->
+  <div class="ambient-glow"></div>
+  <div class="ambient-glow two"></div>
+
+  <div class="app-container">
+
+    <!-- Top Hologram Header Console -->
+    <header class="header-console" id="headerConsole">
+      <div class="brand-section">
+        <div class="logo-hologram">Ω</div>
+        <div class="brand-title">
+          <h1>NEXUS GRID</h1>
+          <p>Cybernetic Controller &amp; Analytics Deck</p>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Counters -->
+      <div class="system-stats">
+        <div class="stat-box">
+          <span class="stat-label">Total Grid Output</span>
+          <span class="stat-value" id="statTotalOutput">0 MW</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Active Nodes</span>
+          <span class="stat-value green" id="statActiveNodes">0 / 0</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">Overloads Critical</span>
+          <span class="stat-value magenta" id="statCriticalNodes">0</span>
+        </div>
+      </div>
+
+      <!-- Sound Engine and Clock Controls -->
+      <div class="audio-control-panel">
+        <button class="audio-btn" id="audioToggle" title="Toggle System FX Synthesizer">
+          <i data-lucide="volume-x"></i>
+        </button>
+        <span class="audio-label">FX Synth</span>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+
+      <!-- Sidebar Operations Console -->
+      <aside class="control-sidebar">
+        <div>
+          <h2 class="sidebar-title">Operations</h2>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:5px; font-family:var(--font-body)">Control sub-systems and nodes</p>
+        </div>
+
+        <!-- Search System -->
+        <div class="search-box">
+          <i data-lucide="search"></i>
+          <input type="text" id="nodeSearch" placeholder="Search Node ID or Tag...">
+        </div>
+
+        <!-- Status Filter Group -->
+        <div class="filter-group">
+          <span class="filter-label">Filter Sector Matrix</span>
+          <button class="filter-btn active" data-filter="all">
+            <span>All Channels</span>
+            <span class="filter-count" id="countAll">0</span>
+          </button>
+          <button class="filter-btn" data-filter="online">
+            <span>Online Core</span>
+            <span class="filter-count" id="countOnline">0</span>
+          </button>
+          <button class="filter-btn" data-filter="dormant">
+            <span>Dormant Core</span>
+            <span class="filter-count" id="countDormant">0</span>
+          </button>
+          <button class="filter-btn" data-filter="overloaded">
+            <span>Overloaded</span>
+            <span class="filter-count" id="countOverloaded">0</span>
+          </button>
+        </div>
+
+        <!-- Add Unit Action Trigger -->
+        <button class="action-card-btn" id="btnSpawnNode">
+          <i data-lucide="plus-circle"></i>
+          <span>SPAWN NODE</span>
+        </button>
+
+        <!-- Dynamic Visualization Deck -->
+        <div class="visuals-container">
+          <span class="visuals-title">Grid Efficiency Vector</span>
+          <div class="chart-wrapper">
+            <canvas id="efficiencyChart"></canvas>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Deck Viewport -->
+      <main class="main-content">
+
+        <!-- Tab Deck Header -->
+        <div class="section-header">
+          <h2 class="section-title" id="deckTitle">Node Transmissions Deck</h2>
+          <div class="view-controls">
+            <button class="view-toggle-btn active" id="viewDeck" title="Hologram 3D Card Deck">
+              <i data-lucide="layout-grid"></i>
+            </button>
+            <button class="view-toggle-btn" id="viewTable" title="Data Console Grid">
+              <i data-lucide="table"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Card View (Default) -->
+        <div class="card-deck" id="cardDeck">
+          <!-- Dynamically populated 3D Cards will go here -->
+        </div>
+
+        <!-- Table Grid View (Toggled) -->
+        <div class="table-panel" id="tablePanel" style="display: none;">
+          <div class="table-wrapper">
+            <table class="grid-table">
+              <thead>
+                <tr>
+                  <th>Node ID</th>
+                  <th>Designation</th>
+                  <th>Classification</th>
+                  <th>Efficiency</th>
+                  <th>Power Load</th>
+                  <th>Core Status</th>
+                  <th style="text-align: right;">Operations</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- Dynamically populated table rows will go here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Holographic Form Overlay Modal -->
+  <div class="modal-overlay" id="nodeModal">
+    <div class="modal-3d-viewport">
+      <div class="modal-3d-box">
+        
+        <div class="modal-header">
+          <h3 class="modal-title" id="modalTitle">Configure Cyber Node</h3>
+          <button class="modal-close-btn" id="btnCancelModal" title="Abort Sequence">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <form id="nodeForm">
+          <input type="hidden" id="editNodeId">
+          
+          <div class="form-group">
+            <label for="nodeName">Node Designation</label>
+            <div class="input-glow-wrapper">
+              <input type="text" id="nodeName" required placeholder="e.g. Genesis Prime, Hyperion 9">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="nodeType">Classification Sector</label>
+            <div class="input-glow-wrapper">
+              <select id="nodeType">
+                <option value="Core Reactor">Core Reactor</option>
+                <option value="Quantum Shield">Quantum Shield</option>
+                <option value="Data Array">Data Array</option>
+                <option value="Tachyon Relay">Tachyon Relay</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Efficiency Rating</label>
+            <div class="slider-container">
+              <input type="range" id="nodeEfficiency" min="0" max="100" value="85">
+              <span class="slider-value" id="efficiencyVal">85%</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="nodePower">Power Output (MW)</label>
+            <div class="input-glow-wrapper">
+              <input type="number" id="nodePower" min="0" max="1000" required placeholder="0 - 1000">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Core Status Protocol</label>
+            <div class="status-radio-group">
+              
+              <div class="status-radio-card online">
+                <input type="radio" name="nodeStatus" id="statusOnline" value="online" checked>
+                <label for="statusOnline" class="status-radio-label">
+                  <i data-lucide="circle-dot" style="width:14px; height:14px; margin-bottom:4px;"></i>
+                  Online
+                </label>
+              </div>
+
+              <div class="status-radio-card dormant">
+                <input type="radio" name="nodeStatus" id="statusDormant" value="dormant">
+                <label for="statusDormant" class="status-radio-label">
+                  <i data-lucide="pause-circle" style="width:14px; height:14px; margin-bottom:4px;"></i>
+                  Dormant
+                </label>
+              </div>
+
+              <div class="status-radio-card overloaded">
+                <input type="radio" name="nodeStatus" id="statusOverloaded" value="overloaded">
+                <label for="statusOverloaded" class="status-radio-label">
+                  <i data-lucide="alert-triangle" style="width:14px; height:14px; margin-bottom:4px;"></i>
+                  Overload
+                </label>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="btnAbortNode">Abort</button>
+            <button type="submit" class="btn-primary" id="btnSubmitNode">Commit Core</button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- External CDNs for Visual polish & Graph -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
